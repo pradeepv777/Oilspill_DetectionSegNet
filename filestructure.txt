@@ -1,0 +1,24 @@
+1. Marine_OilSpills/
+  README.md
+  project_explanation.txt
+  requirements.txt
+  .gitignore
+  dataset.py
+  model.py
+  train.py
+  predict.py
+  utils.py
+  test_pipeline.py
+
+ 2. DATASET STRUCTURE
+/dataset/
+├── train/
+│   ├── palsar/       # 6202 SAR images for training (JPG/PNG)
+│   └── sentinel/     # 6708 SAR images for training (JPG/PNG)
+└── test/
+    ├── palsar/
+    │   ├── gt/       # 776 ground truth mask images (PNG)
+    │   └── sat/      # 776 SAR satellite images (JPG)
+    └── sentinel/
+        ├── gt/       # 839 ground truth mask images (PNG)
+        └── sat/      # 839 SAR satellite images (JPG)

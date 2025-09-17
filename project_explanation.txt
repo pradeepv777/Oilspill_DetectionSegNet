@@ -1,0 +1,158 @@
+MARINE OIL SPILL DETECTION PROJECT
+=====================================
+
+PROJECT OVERVIEW
+----------------
+This project implements a system for detecting oil spills in marine environments using satellite imagery and deep learning. The system uses a SegNet-based convolutional neural network to perform semantic segmentation on Synthetic Aperture Radar (SAR) satellite images, identifying and delineating oil spill areas with high accuracy.
+
+PROBLEM STATEMENT
+-----------------
+Oil spills in marine environments pose significant environmental threats, causing:
+- Marine ecosystem damage
+- Economic losses to fishing and tourism industries
+- Long-term environmental contamination
+- Threat to marine wildlife
+
+Traditional manual detection methods are:
+- Time-consuming and labor-intensive
+- Subject to human error and fatigue
+- Unable to process large volumes of satellite data quickly
+- Limited by weather conditions and visibility
+
+SOLUTION APPROACH
+-----------------
+This project addresses these challenges by:
+1. Using SAR satellite imagery (PALSAR and Sentinel-1 data) that works in all weather conditions
+2. Implementing automated deep learning-based detection
+3. Providing real-time processing capabilities
+4. Generating precise binary masks showing oil spill locations
+
+TECHNICAL METHODOLOGY
+---------------------
+
+Data Source (SOS_dataset):
+- Deep-SAR Oil Spill (SOS) dataset curated by HPSCIL (China University of Geosciences, Wuhan) and RS-IDEA (Wuhan University)
+- Study regions: Gulf of Mexico (ALOS) and Persian Gulf (Sentinel-1A)
+- Dataset includes SAR images and corresponding ground-truth masks
+- Data enhancement used by authors: cropping, rotation, noise addition
+
+Model Architecture:
+- SegNet: Encoder-decoder architecture with skip connections
+- Input: Grayscale satellite images (1 channel)
+- Output: Binary segmentation masks (1 channel)
+- Loss Function: Binary Cross Entropy with Logits
+- Optimizer: Adam with learning rate scheduling
+
+Key Features:
+- Automatic device detection (CUDA, MPS, DirectML, CPU)
+- Memory-efficient training with small batch sizes
+- Comprehensive metrics tracking (F1, Precision, Recall, IoU, Dice)
+- Model checkpointing and best model saving
+- Real-time inference capabilities
+
+Dataset structure used in this project:
+/dataset/
+├── train/
+│   ├── palsar/       # 6202 SAR images for training (JPG/PNG)
+│   └── sentinel/     # 6708 SAR images for training (JPG/PNG)
+└── test/
+    ├── palsar/
+    │   ├── gt/       # 776 ground truth mask images (PNG)
+    │   └── sat/      # 776 SAR satellite images (JPG)
+    └── sentinel/
+        ├── gt/       # 839 ground truth mask images (PNG)
+        └── sat/      # 839 SAR satellite images (JPG)
+
+Typical file types:
+- SAR images (e.g., JPG/PNG)
+- Binary masks with suffix like `_mask.png`
+
+Reported composition (from dataset docs):
+| Region | Training Images | Testing Images |
+| Mexico oil spill area | 3101 | 776 |
+| Persian Gulf oil spill area | 3354 | 839 |
+
+TECHNICAL IMPLEMENTATION
+------------------------
+
+Core Components:
+1. dataset.py - Custom PyTorch dataset class for loading satellite imagery
+2. model.py - SegNet model definition and architecture
+3. train.py - Training script with metrics tracking and checkpointing
+4. predict.py - Inference script for generating masks from new images
+5. utils.py - Utility functions for data processing
+6. test_pipeline.py - End-to-end testing pipeline
+
+Training Process:
+- Loads training split via `OilSpillDataset(split="train", sensor=...)` with options:
+- Default: both sensors combined
+- Only PALSAR: `--sensor palsar`
+- Only Sentinel: `--sensor sentinel`
+- Default epochs: 100 (configurable via `--epochs`)
+- Batch size and learning rate configurable via `--batch-size` and `--lr`
+- Saves best model based on average training loss
+- Saves checkpoints every 10 epochs and a final model at the end
+- Tracks metrics: Pixel Accuracy, F1, Precision, Recall, IoU, Dice
+
+Inference Process:
+- Loads pre-trained model weights
+- Processes input JPG images
+- Converts to grayscale and resizes to 256x256
+- Generates binary segmentation mask
+- Resizes output back to original dimensions
+- Saves as PNG mask file
+
+PERFORMANCE METRICS
+-------------------
+The system tracks multiple performance indicators:
+- Pixel Accuracy: Overall correct pixel classification
+- F1 Score: Harmonic mean of precision and recall
+- Precision: True positive rate among positive predictions
+- Recall: True positive rate among actual positives
+- IoU (Intersection over Union): Overlap between predicted and ground truth
+- Dice Coefficient: Similarity measure between predicted and ground truth
+
+APPLICATIONS
+------------
+This system can be used for:
+- Real-time oil spill monitoring
+- Environmental impact assessment
+- Emergency response planning
+- Historical spill analysis
+- Regulatory compliance monitoring
+- Research and academic studies
+
+ADVANTAGES
+----------
+1. Weather Independence: SAR imagery works in all weather conditions
+2. High Accuracy: Deep learning provides precise detection
+3. Scalability: Can process large volumes of satellite data
+4. Automation: Reduces human intervention and error
+5. Real-time Processing: Fast inference for emergency response
+6. Cost-effective: Reduces manual monitoring costs
+
+TECHNICAL REQUIREMENTS
+----------------------
+- Python 3.8+
+- PyTorch 2.8.0+
+- CUDA support (optional, for GPU acceleration)
+- 8GB+ RAM recommended
+- Storage space for satellite imagery datasets
+
+FUTURE ENHANCEMENTS
+-------------------
+Potential improvements include:
+- Multi-class segmentation for different oil types
+- Temporal analysis for spill tracking over time
+- Integration with real-time satellite data feeds
+- Web-based user interface
+- Mobile application for field use
+- Integration with GIS systems
+- Automated alert systems
+
+CONCLUSION
+----------
+This marine oil spill detection project demonstrates the power of combining satellite remote sensing with deep learning for environmental monitoring. The system provides an automated, accurate, and scalable solution for oil spill detection that can significantly improve environmental protection efforts and emergency response capabilities.
+
+The modular design allows for easy extension and customization, making it suitable for both research and operational applications in marine environmental monitoring.
+
