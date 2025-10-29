@@ -6,8 +6,8 @@ __pycache__/
 
 # Virtual environment
 venv/
+.venv/
 
-# PyTorch / deep learning outputs
 outputs/
 models/saved_models/
 *.pt
@@ -19,3 +19,5 @@ models/saved_models/
 # OS files
 .DS_Store
 Thumbs.db
+
+.vscode/
