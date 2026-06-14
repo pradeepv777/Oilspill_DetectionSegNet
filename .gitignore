@@ -8,11 +8,6 @@ __pycache__/
 venv/
 .venv/
 
-outputs/
-models/saved_models/
-*.pt
-*.pth
-
 # Jupyter notebooks checkpoints
 .ipynb_checkpoints/
 

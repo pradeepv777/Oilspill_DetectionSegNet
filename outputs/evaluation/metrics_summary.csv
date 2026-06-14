@@ -1,0 +1,2 @@
+accuracy,precision,recall,specificity,f1,iou,dice,TP,FP,FN,TN,roc_auc,avg_precision
+0.865262,0.766465,0.696101,0.925044,0.72959,0.574295,0.72959,19238419,5861772,8398989,72341460,0.905929,0.783707
