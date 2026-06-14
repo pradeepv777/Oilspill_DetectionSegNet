@@ -1,0 +1,136 @@
+============================================================
+  OIL SPILL DETECTION — TESTING & EVALUATION SUMMARY
+============================================================
+
+OVERVIEW
+--------
+After training, the model was evaluated on a held-out test set
+that was never seen during training. This gives an unbiased
+measure of how well the model generalises to new SAR imagery.
+
+Evaluation was performed using evaluate.py, which runs the
+trained model over all test images, collects pixel-level
+predictions, and computes metrics + graphs.
+
+------------------------------------------------------------
+
+TEST DATASET
+------------
+Sensors        : PALSAR + Sentinel-1 (SAR grayscale)
+PALSAR Samples : 776 image-mask pairs
+Sentinel Samples: 839 image-mask pairs
+Total Samples  : 1,615 image-mask pairs
+Image Size     : Resized to 256 × 256 pixels for inference
+Split          : Separate test folder (unseen during training)
+
+------------------------------------------------------------
+
+HOW EVALUATION WORKS
+--------------------
+1. The best saved model (segnet_best_model.pth) is loaded.
+
+2. Each test image is passed through the model to get a
+   logit map. A sigmoid activation converts logits to
+   probabilities (0 to 1) per pixel.
+
+3. Pixels with probability > 0.5 are classified as oil spill
+   (positive class). All others are background (negative).
+
+4. Predictions are compared against ground truth masks at
+   pixel level. Each pixel falls into one of four categories:
+   - TP (True Positive)  : predicted oil, actual oil
+   - FP (False Positive) : predicted oil, actual background
+   - FN (False Negative) : predicted background, actual oil
+   - TN (True Negative)  : predicted background, actual background
+
+5. All metrics are computed from the aggregated pixel counts
+   across the entire test set.
+
+------------------------------------------------------------
+
+TEST RESULTS
+------------
+Accuracy       : 0.8865  (88.65%)
+Precision      : 0.8131  (81.31%)
+Recall         : 0.7343  (73.43%)
+Specificity    : 0.9404  (94.04%)
+F1 Score       : 0.7717  (77.17%)
+IoU            : 0.6282  (62.82%)
+Dice           : 0.7717  (77.17%)
+
+Pixel Counts (across 1,615 test images):
+  TP : 20,293,019
+  FP :  4,663,866
+  FN :  7,344,389
+  TN : 73,539,366
+
+ROC AUC and Average Precision are saved in metrics_summary.csv.
+
+------------------------------------------------------------
+
+METRIC EXPLANATIONS
+--------------------
+Accuracy     : % of pixels correctly classified overall.
+               Can be misleading due to class imbalance
+               (background pixels vastly outnumber oil pixels).
+
+Precision    : Of all pixels predicted as oil, how many
+               actually were oil. High precision = fewer
+               false alarms.
+
+Recall       : Of all actual oil pixels, how many were
+               correctly detected. High recall = fewer
+               missed spills. Critical for this task —
+               missing a real spill is worse than a false alarm.
+
+F1 Score     : Harmonic mean of precision and recall.
+               Balances both concerns. Primary metric for
+               imbalanced segmentation tasks.
+
+IoU          : Intersection over Union. Measures overlap
+               between predicted mask and ground truth mask.
+               Industry standard for segmentation evaluation.
+               IoU of 0.628 is strong for SAR oil spill data.
+
+Specificity  : Of all background pixels, how many were
+               correctly identified as background.
+
+Confusion    : 2x2 matrix of TP/FP/FN/TN at pixel level.
+Matrix         Visualised in confusion_matrix.png.
+
+ROC Curve    : True Positive Rate vs False Positive Rate at
+               all thresholds. AUC measures overall
+               discriminative ability of the model.
+
+PR Curve     : Precision vs Recall at all thresholds.
+               More informative than ROC for imbalanced data
+               (oil pixels are the minority class).
+
+------------------------------------------------------------
+
+OUTPUT FILES (outputs/evaluation/)
+------------------------------------
+confusion_matrix.png   — Pixel-level TP/FP/FN/TN visualised
+roc_curve.png          — ROC curve with AUC score
+pr_curve.png           — Precision-Recall curve with AP score
+metrics_summary.csv    — All scalar metrics in one CSV row
+
+Training curve plots are in outputs/training_plots/.
+
+------------------------------------------------------------
+
+TRAIN VS TEST COMPARISON
+--------------------------
+Metric       Train (Epoch 50)    Test (Held-out)
+-----------  ----------------    ---------------
+Accuracy     0.9412              0.8865
+Precision    0.9263              0.8131
+Recall       0.8113              0.7343
+F1           0.8643              0.7717
+IoU          0.7628              0.6282
+
+The drop from train to test is expected and healthy. It
+confirms the model learned genuine features from SAR imagery
+rather than memorising the training data (no severe overfitting).
+
+============================================================
