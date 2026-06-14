@@ -1,6 +1,10 @@
 import os
+import csv
 import torch
 import torch.nn as nn
+import matplotlib
+matplotlib.use("Agg")  # non-interactive backend — works without a display
+import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, ConcatDataset
 from dataset import OilSpillDataset
 from model import SegNet
@@ -61,7 +65,22 @@ def main():
     print(f"Using device: {device}")
 
     checkpoint_dir = "models/saved_models"
+    plots_dir = "outputs/training_plots"
     os.makedirs(checkpoint_dir, exist_ok=True)
+    os.makedirs(plots_dir, exist_ok=True)
+
+    # History accumulators for plotting
+    history = {
+        "epoch": [],
+        "loss": [],
+        "accuracy": [],
+        "precision": [],
+        "recall": [],
+        "specificity": [],
+        "f1": [],
+        "iou": [],
+        "lr": [],
+    }
 
     model = SegNet(in_channels=1, num_classes=1).to(device)
     criterion = nn.BCEWithLogitsLoss()
@@ -121,6 +140,17 @@ def main():
               f"F1: {avg_f1:.4f}, IoU: {avg_iou:.4f}, "
               f"LR: {optimizer.param_groups[0]['lr']:.6f}")
 
+        # ── Record history ──────────────────────────
+        history["epoch"].append(epoch)
+        history["loss"].append(avg_loss)
+        history["accuracy"].append(avg_accuracy)
+        history["precision"].append(avg_precision)
+        history["recall"].append(avg_recall)
+        history["specificity"].append(avg_specificity)
+        history["f1"].append(avg_f1)
+        history["iou"].append(avg_iou)
+        history["lr"].append(optimizer.param_groups[0]["lr"])
+
         if avg_loss < best_loss:
             best_loss = avg_loss
             best_model_path = os.path.join(checkpoint_dir, "segnet_best_model.pth")
@@ -135,6 +165,72 @@ def main():
     final_model_path = os.path.join(checkpoint_dir, "segnet_final_model.pth")
     torch.save(model.state_dict(), final_model_path)
     print(f"Final model saved: {final_model_path}")
+
+    # ── Save training history CSV ────────────────
+    csv_path = os.path.join(plots_dir, "training_history.csv")
+    with open(csv_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=history.keys())
+        writer.writeheader()
+        for i in range(len(history["epoch"])):
+            writer.writerow({k: history[k][i] for k in history})
+    print(f"Training history CSV saved: {csv_path}")
+
+    # ── Plot training curves ─────────────────────
+    epochs = history["epoch"]
+
+    # 1. Loss curve
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.plot(epochs, history["loss"], color="steelblue", lw=2)
+    ax.set_xlabel("Epoch"); ax.set_ylabel("Loss")
+    ax.set_title("Training Loss Over Epochs", fontweight="bold")
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(plots_dir, "loss_curve.png"), dpi=150)
+    plt.close()
+
+    # 2. F1 & IoU curves
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.plot(epochs, history["f1"],  color="darkorange", lw=2, label="F1")
+    ax.plot(epochs, history["iou"], color="green",      lw=2, label="IoU")
+    ax.set_xlabel("Epoch"); ax.set_ylabel("Score")
+    ax.set_title("F1 & IoU Over Epochs", fontweight="bold")
+    ax.legend(); ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(plots_dir, "f1_iou_curve.png"), dpi=150)
+    plt.close()
+
+    # 3. Precision & Recall curves
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.plot(epochs, history["precision"], color="purple",  lw=2, label="Precision")
+    ax.plot(epochs, history["recall"],    color="crimson", lw=2, label="Recall")
+    ax.set_xlabel("Epoch"); ax.set_ylabel("Score")
+    ax.set_title("Precision & Recall Over Epochs", fontweight="bold")
+    ax.legend(); ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(plots_dir, "precision_recall_curve.png"), dpi=150)
+    plt.close()
+
+    # 4. All metrics in one overview
+    fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+    metric_cfg = [
+        ("loss",        "Loss",        "steelblue"),
+        ("f1",          "F1",          "darkorange"),
+        ("iou",         "IoU",         "green"),
+        ("accuracy",    "Accuracy",    "teal"),
+        ("precision",   "Precision",   "purple"),
+        ("recall",      "Recall",      "crimson"),
+    ]
+    for ax, (key, label, color) in zip(axes.flat, metric_cfg):
+        ax.plot(epochs, history[key], color=color, lw=2)
+        ax.set_title(label, fontweight="bold")
+        ax.set_xlabel("Epoch"); ax.set_ylabel(label)
+        ax.grid(True, alpha=0.3)
+    plt.suptitle("Training Metrics Overview", fontsize=14, fontweight="bold")
+    plt.tight_layout()
+    plt.savefig(os.path.join(plots_dir, "training_overview.png"), dpi=150)
+    plt.close()
+
+    print(f"Training plots saved to: {plots_dir}/")
     print("Training finished!")
 
 if __name__ == "__main__":

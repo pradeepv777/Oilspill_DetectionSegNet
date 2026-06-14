@@ -2,8 +2,6 @@
 
 oil spill detection using SegNet model.
 
-## Quick Start
-
 1. **Create and activate a virtual environment (Windows):**
    ```bash
    python -m venv venv
