@@ -1,0 +1,160 @@
+============================================================
+  OIL SPILL DETECTION — TRAINING CONFIGURATION & SUMMARY
+============================================================
+
+MODEL
+-----
+Architecture   : SegNet (Encoder-Decoder with MaxUnpooling)
+Input Channels : 1  (grayscale SAR imagery)
+Output Classes : 1  (binary segmentation — oil spill vs background)
+
+DATASET
+-------
+Sensors        : PALSAR + Sentinel-1 (SAR)
+Train Samples  : 6,455 image-mask pairs (3,101 PALSAR + 3,354 Sentinel)
+Test Samples   : 1,647 image-mask pairs (776 PALSAR + 871 Sentinel)
+Image Format   : Grayscale JPG (satellite), PNG (ground truth mask)
+Input Size     : 256 × 256 pixels
+
+HYPERPARAMETERS
+---------------
+Epochs         : 50
+Batch Size     : 8
+Learning Rate  : 0.001 (Adam optimizer)
+LR Scheduler   : ReduceLROnPlateau (patience=5, factor=0.5)
+Loss Function  : BCEWithLogitsLoss (binary cross-entropy with logits)
+Optimizer      : Adam
+
+TRAINING ENVIRONMENT
+--------------------
+Platform       : Google Colab
+GPU            : NVIDIA T4 (CUDA)
+Speed          : ~3.85 it/s → ~3.5 min/epoch
+Total Time     : ~2.9 hours (50 epochs)
+
+TRAINING RESULTS (Final Epoch — Train Set)
+------------------------------------------
+Loss           : 0.1283
+Accuracy       : 0.9412
+Precision      : 0.9263
+Recall         : 0.8113
+Specificity    : 0.9807
+F1 Score       : 0.8643
+IoU            : 0.7628
+
+============================================================
+  HOW THE MODEL WAS TRAINED
+============================================================
+
+1. DATA LOADING
+   Images from two SAR sensors (PALSAR and Sentinel-1) were loaded
+   as grayscale (single-channel) tensors. Ground truth masks are
+   binary PNGs where white pixels indicate oil spill regions.
+   Both datasets were concatenated into a single training split.
+
+2. MODEL ARCHITECTURE
+   SegNet is an encoder-decoder CNN. The encoder uses 5 blocks of
+   double Conv → BatchNorm → ReLU layers with MaxPooling (saving
+   pooling indices). The decoder mirrors this using MaxUnpooling
+   with the saved indices to restore spatial resolution without
+   learnable upsampling. The final layer outputs a single logit
+   map per pixel.
+
+3. LOSS FUNCTION
+   BCEWithLogitsLoss combines a sigmoid activation with binary
+   cross-entropy in a numerically stable way. It treats each pixel
+   as an independent binary classification (oil or background).
+
+4. OPTIMIZATION
+   Adam optimizer with lr=0.001. ReduceLROnPlateau halves the
+   learning rate if validation loss stops improving for 5 epochs,
+   preventing stagnation in later training.
+
+5. CHECKPOINTING
+   The best model (lowest training loss) was saved at each
+   improvement. Epoch checkpoints were saved every 10 epochs.
+   Final model saved after epoch 50.
+
+6. METRICS TRACKED PER EPOCH
+   Accuracy, Precision, Recall, Specificity, F1, IoU — computed
+   at pixel level across all batches and averaged per epoch.
+   Full history saved to outputs/training_plots/training_history.csv.
+
+============================================================
+
+============================================================
+  GOOGLE COLAB TRAINING STEPS (Reproducibility Reference)
+============================================================
+
+Step 1 — Mount Google Drive and set working directory
+------------------------------------------------------
+from google.colab import drive
+drive.mount('/content/drive')
+
+import os
+os.chdir("/content/drive/MyDrive/Oilspill_DetectionSegNet")
+print(os.getcwd())
+print(os.listdir("."))
+
+------------------------------------------------------------
+
+Step 2 — Install required dependencies
+------------------------------------------------------
+!pip install scikit-learn tqdm opencv-python-headless
+
+------------------------------------------------------------
+
+Step 3 — Copy dataset from Drive to Colab local SSD (for faster I/O)
+------------------------------------------------------
+import shutil, os
+
+print("Copying dataset to local disk...")
+shutil.copytree(
+    "/content/drive/MyDrive/Oilspill_DetectionSegNet/dataset",
+    "/content/Oilspill_DetectionSegNet/dataset"
+)
+print("Done!")
+
+------------------------------------------------------------
+
+Step 4 — Copy project code files to local disk
+------------------------------------------------------
+import shutil
+
+src = "/content/drive/MyDrive/Oilspill_DetectionSegNet"
+dst = "/content/Oilspill_DetectionSegNet"
+os.makedirs(dst, exist_ok=True)
+
+for f in ["train.py", "evaluate.py", "model.py", "dataset.py", "utils.py", "predict.py"]:
+    shutil.copy(f"{src}/{f}", f"{dst}/{f}")
+
+os.makedirs(f"{dst}/models/saved_models", exist_ok=True)
+os.chdir(dst)
+print("Ready:", os.listdir("."))
+
+------------------------------------------------------------
+
+Step 5 — Train the model
+------------------------------------------------------
+!python train.py --epochs 50 --batch-size 8 --sensor both
+
+------------------------------------------------------------
+
+Step 6 — Save model and outputs back to Google Drive
+------------------------------------------------------
+import shutil, os
+
+shutil.copy(
+    "/content/Oilspill_DetectionSegNet/models/saved_models/segnet_best_model.pth",
+    "/content/drive/MyDrive/Oilspill_DetectionSegNet/models/saved_models/segnet_best_model.pth"
+)
+
+shutil.copytree(
+    "/content/Oilspill_DetectionSegNet/outputs",
+    "/content/drive/MyDrive/Oilspill_DetectionSegNet/outputs",
+    dirs_exist_ok=True
+)
+
+print("Everything saved to Drive!")
+
+============================================================

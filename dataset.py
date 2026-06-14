@@ -53,17 +53,24 @@ class OilSpillDataset(Dataset):
 
         print(f"Found {len(self.image_paths)} image-mask pairs for {split} {sensor}")
 
-        self.transform = transforms.ToTensor()
+        self.image_transform = transforms.Compose([
+            transforms.Resize((256, 256)),
+            transforms.ToTensor(),
+        ])
+        self.mask_transform = transforms.Compose([
+            transforms.Resize((256, 256), interpolation=transforms.InterpolationMode.NEAREST),
+            transforms.ToTensor(),
+        ])
 
     def __len__(self):
         return len(self.image_paths)
 
     def __getitem__(self, idx):
         img = Image.open(self.image_paths[idx]).convert("L")
-        img = self.transform(img)
+        img = self.image_transform(img)
 
-        if self.mask_paths and self.mask_paths[idx] is not None:
+        if self.mask_paths and idx < len(self.mask_paths) and self.mask_paths[idx] is not None:
             mask = Image.open(self.mask_paths[idx]).convert("L")
-            mask = self.transform(mask)
+            mask = self.mask_transform(mask)
             return img, mask
         return img

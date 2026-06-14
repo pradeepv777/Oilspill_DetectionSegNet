@@ -3,7 +3,7 @@ import csv
 import torch
 import torch.nn as nn
 import matplotlib
-matplotlib.use("Agg")  # non-interactive backend — works without a display
+matplotlib.use("Agg")  
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, ConcatDataset
 from dataset import OilSpillDataset
