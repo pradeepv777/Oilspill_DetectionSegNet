@@ -1,6 +1,9 @@
-1. Marine_OilSpills/
+1. Oilspill_DetectionSegNet/
   README.md
-  project_explanation.txt
+  metrics
+  models
+  ├──saved_models
+     ├── segnet_best_model.pth
   requirements.txt
   .gitignore
   dataset.py
@@ -8,7 +11,7 @@
   train.py
   predict.py
   utils.py
-  test_pipeline.py
+  evaluate.py
 
  2. DATASET STRUCTURE
 /dataset/
