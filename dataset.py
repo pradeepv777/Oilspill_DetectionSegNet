@@ -52,11 +52,12 @@ class OilSpillDataset(Dataset):
             self.mask_paths = [pair[1] for pair in valid_pairs]
 
         print(f"Found {len(self.image_paths)} image-mask pairs for {split} {sensor}")
-
+        # For SAR
         self.image_transform = transforms.Compose([
             transforms.Resize((256, 256)),
             transforms.ToTensor(),
         ])
+        #For masks
         self.mask_transform = transforms.Compose([
             transforms.Resize((256, 256), interpolation=transforms.InterpolationMode.NEAREST),
             transforms.ToTensor(),

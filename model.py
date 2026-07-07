@@ -18,11 +18,11 @@ class SegNet(nn.Module):
         self.dec4 = self.conv_block(512, 256)
         self.dec3 = self.conv_block(256, 128)
         self.dec2 = self.conv_block(128, 64)
-        self.dec1 = nn.Conv2d(64, num_classes, kernel_size=1)
+        self.dec1 = nn.Conv2d(64, num_classes, kernel_size=1) # produces Seg Mask
 
     def conv_block(self, in_ch, out_ch):
         return nn.Sequential(
-            nn.Conv2d(in_ch, out_ch, kernel_size=3, padding=1),
+            nn.Conv2d(in_ch, out_ch, kernel_size=3, padding=1), #for padding
             nn.BatchNorm2d(out_ch),
             nn.ReLU(inplace=True),
             nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1),

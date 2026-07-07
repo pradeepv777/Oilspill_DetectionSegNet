@@ -23,7 +23,7 @@ def get_device():
 
 
 def predict(image_path, output_dir, checkpoint_path, device):
-    # ── Load model ───────────────────────────────────────
+    # load model
     model = SegNet(in_channels=1, num_classes=1).to(device)
     if not os.path.exists(checkpoint_path):
         print(f"Model checkpoint not found at {checkpoint_path}. Please train the model first.")
@@ -33,20 +33,20 @@ def predict(image_path, output_dir, checkpoint_path, device):
     model.eval()
     print(f"Model loaded from {checkpoint_path}")
 
-    # ── Load and preprocess image ────────────────────────
+    #Load and preprocess image
     img_pil = Image.open(image_path).convert("L")
     img_resized = img_pil.resize((256, 256), Image.LANCZOS)
 
     transform = transforms.ToTensor()
     img_tensor = transform(img_resized).unsqueeze(0).to(device)
 
-    # ── Run inference ────────────────────────────────────
+    # Run inference
     with torch.no_grad():
         output = model(img_tensor)
         prob_map = torch.sigmoid(output).squeeze().cpu().numpy()   # (256, 256) float
         pred_mask = (prob_map > 0.5).astype(np.uint8) * 255       # binary 0/255
 
-    # ── Build overlay (original + red contours) ──────────
+    # Build overlay (original + red contours)
     img_np = np.array(img_resized, dtype=np.uint8)                 # (256, 256) gray
     img_bgr = cv2.cvtColor(img_np, cv2.COLOR_GRAY2BGR)
     contours, _ = cv2.findContours(pred_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -55,7 +55,7 @@ def predict(image_path, output_dir, checkpoint_path, device):
     cv2.addWeighted(overlay, 0.6, img_bgr, 0.4, 0, overlay)
     overlay_rgb = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)        
 
-    # ── Build 3panels
+    # Build 3panels
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
     fig.patch.set_facecolor("#1a1a2e")
 
@@ -81,7 +81,7 @@ def predict(image_path, output_dir, checkpoint_path, device):
                  fontweight="bold", color="white", y=1.02)
     plt.tight_layout()
 
-    # ── Save outputs ─────────────────────────────────────
+    # Save outputs
     os.makedirs(output_dir, exist_ok=True)
     base_name = os.path.splitext(os.path.basename(image_path))[0]
 

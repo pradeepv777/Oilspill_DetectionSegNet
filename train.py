@@ -62,9 +62,9 @@ def main():
     args = parser.parse_args()
 
     device = get_device()
-    print(f"Using device: {device}")
+    print(f"Using device: {device}") #Cuda
 
-    checkpoint_dir = "models/saved_models"
+    checkpoint_dir = "models/saved_models" #Final Model saved
     plots_dir = "outputs/training_plots"
     os.makedirs(checkpoint_dir, exist_ok=True)
     os.makedirs(plots_dir, exist_ok=True)
@@ -81,13 +81,13 @@ def main():
         "iou": [],
         "lr": [],
     }
-
+                   # 1 input, 1 binary segmentation [[0,1]]
     model = SegNet(in_channels=1, num_classes=1).to(device)
     criterion = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=5, factor=0.5)
 
-    print("Loading training dataset...")
+    print("Loading training dataset...") #combine both datasets
     sensors = ["palsar", "sentinel"] if args.sensor == "both" else [args.sensor]
     datasets = [OilSpillDataset(split="train", sensor=s) for s in sensors]
     train_dataset = ConcatDataset(datasets) if len(datasets) > 1 else datasets[0]
@@ -140,7 +140,7 @@ def main():
               f"F1: {avg_f1:.4f}, IoU: {avg_iou:.4f}, "
               f"LR: {optimizer.param_groups[0]['lr']:.6f}")
 
-        # ── Record history ──────────────────────────
+        # record history 
         history["epoch"].append(epoch)
         history["loss"].append(avg_loss)
         history["accuracy"].append(avg_accuracy)
@@ -166,7 +166,7 @@ def main():
     torch.save(model.state_dict(), final_model_path)
     print(f"Final model saved: {final_model_path}")
 
-    # ── Save training history CSV ────────────────
+    # Save training history CSV
     csv_path = os.path.join(plots_dir, "training_history.csv")
     with open(csv_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=history.keys())
@@ -175,7 +175,7 @@ def main():
             writer.writerow({k: history[k][i] for k in history})
     print(f"Training history CSV saved: {csv_path}")
 
-    # ── Plot training curves ─────────────────────
+    # plot training curves
     epochs = history["epoch"]
 
     # 1. Loss curve
