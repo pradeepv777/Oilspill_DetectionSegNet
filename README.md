@@ -1,4 +1,4 @@
-# Oil Spill Detection with SegNet
+# Marine Oil Spill Detection with SegNet
 
 A semantic segmentation pipeline for detecting marine oil spills in SAR (Synthetic Aperture Radar) satellite imagery using a custom SegNet architecture trained on PALSAR and Sentinel data.
 
