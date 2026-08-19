@@ -58,18 +58,12 @@ Evaluation on the combined PALSAR + Sentinel test set:
 <img width="2250" height="1200" alt="image" src="https://github.com/user-attachments/assets/05f99238-a2a8-4a12-9e55-1f9d2b30ba05" />
 
 
-| Metric       | Score  |
-|--------------|--------|
-| Accuracy     | 88.65% |
-| Precision    | 81.31% |
-| Recall       | 73.43% |
-| Specificity  | 94.04% |
-| F1 Score     | 77.17% |
-| IoU          | 62.82% |
-| Dice         | 77.17% |
-| ROC-AUC      | 94.10% |
-| Avg Precision| 86.03% |
 
+| Metric | Score | &nbsp; | Metric | Score | &nbsp; | Metric | Score |
+|---|---:|:---:|---|---:|:---:|---|---:|
+| Accuracy | 88.65% | | Precision | 81.31% | | Recall | 73.43% |
+| Specificity | 94.04% | | F1 Score | 77.17% | | IoU | 62.82% |
+| Dice | 77.17% | | ROC-AUC | 94.10% | | Avg Precision | 86.03% |
 ---
 
 ## Project Structure
