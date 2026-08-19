@@ -55,6 +55,9 @@ dataset/
 
 Evaluation on the combined PALSAR + Sentinel test set:
 
+<img width="2250" height="1200" alt="image" src="https://github.com/user-attachments/assets/05f99238-a2a8-4a12-9e55-1f9d2b30ba05" />
+
+
 | Metric       | Score  |
 |--------------|--------|
 | Accuracy     | 88.65% |
