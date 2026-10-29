@@ -14,6 +14,14 @@ venv/
 # OS files
 .DS_Store
 Thumbs.db
-
 .vscode/
 
+# Datasets and zip archives
+dataset/
+*.zip
+
+# Model checkpoints (>100MB exceeds GitHub push limits)
+*.pth
+*.pt
+models/saved_models/*.pth
+Misc

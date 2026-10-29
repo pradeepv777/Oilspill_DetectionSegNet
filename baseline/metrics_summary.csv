@@ -1,0 +1,2 @@
+model,accuracy,precision,recall,specificity,f1,iou,dice,roc_auc,avg_precision,TP,FP,FN,TN
+Otsu_Thresholding_Baseline,0.603257,0.378529,0.809238,0.530462,0.515792,0.34752,0.515792,0.840934,0.67027,22365243,36719369,5272165,41483863

@@ -1,0 +1,29 @@
+=================================================================
+      SAR OIL SPILL DETECTION — OTSU BASELINE EVALUATION
+=================================================================
+
+OVERVIEW
+--------
+Otsu's thresholding was evaluated on the held-out test set (1,615 samples)
+as a classical heuristic baseline. Because oil spills appear dark in SAR imagery,
+Otsu automatically calculates the intra-class variance minimizing threshold.
+
+EVALUATION METRICS SUMMARY
+--------------------------
+Accuracy         : 60.33%
+Precision        : 37.85%
+Recall           : 80.92%
+Specificity      : 53.05%
+F1 Score (Dice)  : 51.58%
+IoU (Jaccard)    : 34.75%
+ROC-AUC          : 84.09%
+Avg Precision    : 67.03%
+
+WHY DEEP LEARNING (SegNet / U-Net) IS SUPERIOR:
+-----------------------------------------------
+1. Otsu achieves reasonable recall but suffers from massive False Positives (low precision),
+   because it cannot distinguish real oil spills from SAR 'look-alikes'
+   (calm water, low-wind zones, natural slicks, and land shadows).
+2. SegNet and U-Net learn spatial shapes, continuous slick geometries,
+   and texture contexts that filter out look-alikes effectively.
+=================================================================
